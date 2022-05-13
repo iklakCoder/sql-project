@@ -1,0 +1,132 @@
+numberOfDeathsEachYear = """--Number of deaths in each year, from max number to minimum
+                        select year, count(*) as "Number of deaths" from deathInfo
+                        group by year 
+                        order by "Number of deaths" desc;
+                    """
+
+kingdomVsKingdom = """--Which kingdom won or lost with which kingdom on which battle
+select bs.battleName, attacker1 as won, defender1 as lost
+from BattleSide bs
+NATURAL join 
+Battle b
+JOIN
+outcome o
+on bs.battleName = b.battleName and b.battleNumber = o.battleNumber and o.attackOutcome="win"
+UNION
+select bs.battleName, defender1 as won, attacker1 as lost
+from BattleSide bs
+NATURAL join 
+Battle b
+JOIN
+outcome o
+on bs.battleName = b.battleName and b.battleNumber = o.battleNumber and o.attackOutcome="loss";"""
+
+maxNoble = """--Which house has the max number of noble people
+Select allegiance, count(*) as count_nobel from person
+group by allegiance
+having person.nobility=1 and allegiance != "None"
+order by count(*) DESC
+limit 1;
+"""
+kingdomMaxWin = """--4which kingdom has the most wins
+select "Kingdom", sum(countWins) as numberOfWins from (
+select attacker1 as "Kingdom", count(*) as countWins
+from outcome o
+JOIN
+BattleSide bs
+JOIN
+Battle b
+on
+o.attackOutcome = "win" and bs.battleName = b.battleName and o.battleNumber = b.battleNumber
+group by attacker1
+UNION
+select defender1 as "Kingdom", count(*)
+from outcome o
+JOIN
+BattleSide bs
+JOIN
+Battle b
+on
+o.attackOutcome = "loss" and bs.battleName = b.battleName and o.battleNumber = b.battleNumber
+group by defender1
+order by count(*) DESC)
+group by "Kingdom"
+order by sum(countWins) desc 
+limit 1
+;
+"""
+
+deathNumKingdom = """--how many died from each kingdom
+select allegiance, count(*) as numDeaths
+from Person
+JOIN
+deathInfo
+on Person.PersonName = deathInfo.PersonName
+group by allegiance
+order by numDeaths desc;
+"""
+deadKings = """--All the kings who died
+select DISTINCT(King) as "Dead King"
+from (
+select battleName, attackerKing as "King"
+from KingOfAttacker
+join 
+deathInfo
+on KingOfAttacker.attackerKing = deathInfo.PersonName
+UNION
+select battleName, defenderKing as "King"
+from kingOfDefender
+join 
+deathInfo
+on kingOfDefender.defenderKing = deathInfo.PersonName);
+"""
+commanderVsNum = """--Number  of Commanders vs Number of battles won
+select numCommander, count(*) as numBattleWins
+from (
+Select b.battleName, count(attackercommander) as numCommander
+FROM
+Battle b
+JOIN
+outcome o
+JOIN
+CommanderWhoAttacked c
+on
+b.battleName = c.BattleName and o.battleNumber = b.battleNumber and o.attackOutcome="win"
+group by b.battleName
+UNION
+Select b.battleName, count(defenderCommander) as numCommander
+FROM
+Battle b
+JOIN
+outcome o
+JOIN
+CommanderWhoDefend c
+on
+b.battleName = c.BattleName and o.battleNumber = b.battleNumber and o.attackOutcome="loss"
+group by b.battleName)
+group by numCommander
+order by numCommander;
+"""
+
+allWinterBattles = """--All the battles that happend in winter
+select b.battleNumber,battleName
+from 
+battle  b
+join 
+BattleArea ba
+on b.battleNumber = ba.battleNumber and ba.summer=0;
+"""
+
+allSummerBattles = """--All the battles that happend in summer
+select b.battleNumber,battleName
+from 
+battle  b
+join 
+BattleArea ba
+on b.battleNumber = ba.battleNumber and ba.summer=1;
+"""
+
+battlesWonByBattleType = """--Number of battles won by each battle typeof
+select count(*) as "Battles Won", battleType from BattleSide  JOIN Battle on BattleSide.battleName = Battle.battleName 
+JOIN outcome on outcome.battleNumber = Battle.battleNumber GROUP by battleType HAVING outcome.attackOutcome = 'win'
+order by "Battles Won" DESC;"""
