@@ -1,2 +1,2 @@
-# github-project
+# Game-of-Thrones project (SQL-Python-GUI) 
 Group project, completed in University, that works on a database collected from online sources...
